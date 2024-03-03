@@ -8,7 +8,7 @@ import (
 )
 
 type DeviceInfo struct {
-	Address string
+	Address bluetooth.Address
 	Name    string
 }
 
@@ -51,25 +51,25 @@ func (ds *DeviceScannerImpl) handleDiscoveredDevice(
 		btScanResult.LocalName(),
 	)
 	di := DeviceInfo{
-		Address: btScanResult.Address.String(),
+		Address: btScanResult.Address,
 	}
 	trimmedName := strings.TrimSpace(btScanResult.LocalName())
 	if len(trimmedName) > 0 {
-		fmt.Printf("Name is %v\n", trimmedName)
+		//fmt.Printf("Name is %v\n", trimmedName)
 		di.Name = trimmedName
 	}
 	ds.updateDeviceInfo(di)
 }
 
 func (ds *DeviceScannerImpl) updateDeviceInfo(di DeviceInfo) {
-	_, exist := ds.devices[di.Address]
+	_, exist := ds.devices[di.Address.String()]
 	if !exist {
-		ds.devices[di.Address] = di
+		ds.devices[di.Address.String()] = di
 		return
 	}
 	// Case the device is already discovered
 	if len(di.Name) > 0 {
-		ds.devices[di.Address] = di
+		ds.devices[di.Address.String()] = di
 	}
 
 }
