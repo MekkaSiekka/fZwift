@@ -1,7 +1,6 @@
 package adapters
 
 import (
-	"fmt"
 	"strings"
 
 	"tinygo.org/x/bluetooth"
@@ -44,12 +43,12 @@ func (ds *DeviceScannerImpl) handleDiscoveredDevice(
 	btAdatper *bluetooth.Adapter,
 	btScanResult bluetooth.ScanResult,
 ) {
-	fmt.Printf(
-		"found device: %v, %v, %v\n",
-		btScanResult.Address.String(),
-		btScanResult.RSSI,
-		btScanResult.LocalName(),
-	)
+	// fmt.Printf(
+	// 	"found device: %v, %v, %v\n",
+	// 	btScanResult.Address.String(),
+	// 	btScanResult.RSSI,
+	// 	btScanResult.LocalName(),
+	// )
 	di := DeviceInfo{
 		Address: btScanResult.Address,
 	}

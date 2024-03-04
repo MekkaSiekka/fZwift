@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/MekkaSiekka/fZwift/adapters"
@@ -13,6 +14,16 @@ import (
 
 var adapter = bluetooth.DefaultAdapter
 
+func getNthBit(byteArray []byte, n int) int {
+	byteIndex := n / 8
+	bitIndex := 7 - (n % 8)
+	if byteIndex >= len(byteArray) {
+		return -1 // Out of bounds
+	}
+	bit := (byteArray[byteIndex] >> uint(bitIndex)) & 1
+	return int(bit)
+}
+
 func main() {
 	// Enable BLE interface.
 	must("enable BLE stack", adapter.Enable())
@@ -20,8 +31,13 @@ func main() {
 	deviceScanner := adapters.NewDeviceScanner()
 	time.Sleep(time.Second * 5)
 	devices := deviceScanner.GetAllDevices()
+	// buffer to retrieve characteristic data
+	buf := make([]byte, 8)
 	for key, val := range devices {
 		fmt.Printf("Key %v, address %v, name %v\n", key, val.Address, val.Name)
+		if val.Name == "" {
+			continue
+		}
 		var device *bluetooth.Device
 		fmt.Printf("Trying to connect %v\n", val.Address)
 		device, err := adapter.Connect(val.Address, bluetooth.ConnectionParams{})
@@ -35,22 +51,46 @@ func main() {
 		services, err := device.DiscoverServices(
 			[]bluetooth.UUID{bluetooth.ServiceUUIDFitnessMachine})
 		if err != nil {
-			fmt.Printf("discover char for device %v: %v\n", val.Name, err)
+			fmt.Printf("discover char for device fail %v: %v\n", val.Name, err)
 			continue
 		}
 		if len(services) == 0 {
 			fmt.Printf("This device does not have service\n")
 			continue
 		}
-		service := services[0]
-		chars, err := service.DiscoverCharacteristics([]bluetooth.UUID{bluetooth.CharacteristicUUIDDFUControlPoint})
-		if err != nil {
-			fmt.Printf("find char %v", err)
+		for _, service := range services {
+			chars, err := service.DiscoverCharacteristics([]bluetooth.UUID{bluetooth.CharacteristicUUIDFitnessMachineFeature})
+			if err != nil {
+				fmt.Printf("found error char %v", err)
+				continue
+			}
+			if len(chars) == 0 {
+				fmt.Printf("cannot find char\n")
+				continue
+			}
+			char := chars[0]
+			fmt.Printf("=================GOOD And Found Controller =======================\n")
+
+			n, err := char.Read(buf)
+			if err != nil {
+				fmt.Printf("    %v\n", err.Error())
+				continue
+			}
+			fmt.Printf("    data bytes %v\n", strconv.Itoa(n))
+			//println("    value =  \n", string(buf[:n]))
+			fmt.Printf("%08b\n", buf[0:n])
+
+			for _, b := range buf {
+				for i := 7; i >= 0; i-- {
+					bit := (b >> uint(i)) & 1
+					fmt.Print(bit)
+				}
+				fmt.Println()
+			}
+
+			fmt.Printf("Finish print \n")
+
 		}
-		if len(chars) == 0 {
-			fmt.Printf("cannot find char")
-		}
-		fmt.Printf("=================GOOD And Found Controller =======================\n")
 
 	}
 
