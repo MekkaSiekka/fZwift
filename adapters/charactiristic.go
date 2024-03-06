@@ -28,10 +28,20 @@ func GetNthBitAsInt(buf []byte, idx int) int {
 	fmt.Printf("result bit %v \n", bit)
 	return int(bit)
 }
+
 func (fm *FitnessMachineChar) ParseCharBuffer(buf []byte) map[int]int {
 	ret := make(map[int]int)
-	ret[defines.CandenceMeasureEnalbe] = GetNthBitAsInt(buf, defines.CandenceMeasureEnalbe)
-	ret[defines.PowerMeasureEnabled] = GetNthBitAsInt(buf, defines.PowerMeasureEnabled)
-	fmt.Printf("Return map %v \n", ret)
+
+	featureBlock := buf[0:4]
+	ret[defines.CandenceMeasureEnabled] = GetNthBitAsInt(featureBlock, defines.CandenceMeasureEnabled)
+	ret[defines.PowerMeasureEnabled] = GetNthBitAsInt(featureBlock, defines.PowerMeasureEnabled)
+	fmt.Printf("Return map 1%v \n", ret)
+
+	targetSettingBlock := buf[4:8]
+	ret[defines.IndoorBikeControlParamEnabled] = GetNthBitAsInt(targetSettingBlock, defines.IndoorBikeControlParamEnabled)
+	ret[defines.ResistentTargetSettingEnabled] = GetNthBitAsInt(targetSettingBlock, defines.ResistentTargetSettingEnabled)
+	ret[defines.PowerTargetSettingEnabled] = GetNthBitAsInt(targetSettingBlock, defines.PowerTargetSettingEnabled)
+	fmt.Printf("Return map 2%v \n", ret)
+
 	return ret
 }

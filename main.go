@@ -82,21 +82,40 @@ func main() {
 			//println("    value =  \n", string(buf[:n]))
 			fmt.Printf("%08b\n", buf[0:n])
 
-			// for _, b := range buf {
-			// 	for i := 0; i < 8; i++ {
-			// 		bit := (b >> uint(i)) & 1
-			// 		fmt.Print(bit)
-			// 	}
-			// 	fmt.Println()
-			// }
+			for _, b := range buf {
+				for i := 0; i < 8; i++ {
+					bit := (b >> uint(i)) & 1
+					fmt.Print(bit)
+				}
+				fmt.Println()
+			}
 
 			parser := adapters.FitnessMachineChar{}
 			parser.ParseCharBuffer(buf)
 
 			fmt.Printf("Finish print \n")
+			// Requst control
+			chars, err = service.DiscoverCharacteristics(
+				[]bluetooth.UUID{bluetooth.CharacteristicUUIDFitnessMachineControlPoint},
+			)
+			if err != nil {
+				fmt.Printf("found error char %v", err)
+				continue
+			}
+			if len(chars) == 0 {
+				fmt.Printf("cannot find char\n")
+				continue
+			}
+			char = chars[0]
+			fmt.Printf("=================GOOD And Found Control Point =======================\n")
+			bytesWritten, err := char.Write([]byte{0x00})
+			if err != nil {
+				fmt.Printf("Cannot write byte %v", err)
+				continue
+			}
+			fmt.Printf("Bytes writte : %v \n", bytesWritten)
 
 		}
-
 	}
 
 }
