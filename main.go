@@ -107,40 +107,42 @@ func main() {
 				continue
 			}
 			char = chars[0]
+			char.EnableNotifications(func(buf []byte) {
+				for idx, b := range buf {
+					fmt.Printf("callback: %v : %v\n", idx, b)
+				}
+			})
 			fmt.Printf("=================GOOD And Found Control Point =======================\n")
 			bytesWritten, err := char.Write([]byte{0x00})
 			if err != nil {
 				fmt.Printf("Cannot write byte %v", err)
 				continue
 			}
-			fmt.Printf("Bytes writte : %v \n", bytesWritten)
-			bytesWritten, err = char.Write([]byte{0x08})
-			if err != nil {
-				fmt.Printf("Cannot write byte get response %v", err)
-				continue
-			}
+			// fmt.Printf("Bytes writte : %v \n", bytesWritten)
+			// bytesWritten, err = char.Write([]byte{0x08})
+			// if err != nil {
+			// 	fmt.Printf("Cannot write byte get response %v", err)
+			// 	continue
+			// }
 			fmt.Printf("Bytes written : %v \n", bytesWritten)
-			char.EnableNotifications(func(buf []byte) {
-				for idx, b := range buf {
-					fmt.Printf("callback: %v : %v\n", idx, b)
-				}
-			})
+			time.Sleep(time.Second * 10)
 			for {
-				bytesWritten, err = char.Write([]byte{0x05, 0x64})
+				bytesWritten, err = char.Write([]byte{0x05, 0x64, 0x00})
 				if err != nil {
 					fmt.Printf("Cannot write byte get response %v", err)
 					continue
 				} else {
 					fmt.Printf("Bytes writte to contorl 1 : %v \n", bytesWritten)
 				}
-				time.Sleep(10)
-				bytesWritten, err = char.Write([]byte{0x05, 0xC8})
+				time.Sleep(10 * time.Second)
+				bytesWritten, err = char.Write([]byte{0x05, 0xC8, 0x00})
 				if err != nil {
 					fmt.Printf("Cannot write byte get response %v", err)
 					continue
 				} else {
 					fmt.Printf("Bytes writte to control 2: %v \n", bytesWritten)
 				}
+				time.Sleep(10 * time.Second)
 			}
 
 		}
