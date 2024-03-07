@@ -33,8 +33,8 @@ func main() {
 	devices := deviceScanner.GetAllDevices()
 	// buffer to retrieve characteristic data
 	buf := make([]byte, 8)
-	for _, val := range devices {
-		//fmt.Printf("Key %v, address %v, name %v\n", key, val.Address, val.Name)
+	for key, val := range devices {
+		fmt.Printf("Key %v, address %v, name %v\n", key, val.Address, val.Name)
 		if val.Name != "Garmin Flux 58884" {
 			continue
 		}
@@ -114,6 +114,34 @@ func main() {
 				continue
 			}
 			fmt.Printf("Bytes writte : %v \n", bytesWritten)
+			bytesWritten, err = char.Write([]byte{0x08})
+			if err != nil {
+				fmt.Printf("Cannot write byte get response %v", err)
+				continue
+			}
+			fmt.Printf("Bytes written : %v \n", bytesWritten)
+			char.EnableNotifications(func(buf []byte) {
+				for idx, b := range buf {
+					fmt.Printf("callback: %v : %v\n", idx, b)
+				}
+			})
+			for {
+				bytesWritten, err = char.Write([]byte{0x05, 0x64})
+				if err != nil {
+					fmt.Printf("Cannot write byte get response %v", err)
+					continue
+				} else {
+					fmt.Printf("Bytes writte to contorl 1 : %v \n", bytesWritten)
+				}
+				time.Sleep(10)
+				bytesWritten, err = char.Write([]byte{0x05, 0xC8})
+				if err != nil {
+					fmt.Printf("Cannot write byte get response %v", err)
+					continue
+				} else {
+					fmt.Printf("Bytes writte to control 2: %v \n", bytesWritten)
+				}
+			}
 
 		}
 	}
